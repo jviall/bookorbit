@@ -503,7 +503,8 @@ function rowDismissed(row: BookRequestItem): boolean {
             </div>
           </td>
 
-          <td class="px-3 text-xs" :class="isCompact ? 'py-1.5' : 'py-2.5'">
+          <!-- A pair's lanes are nowrap, so without `max-w-0` a long reason widens this column and Title gives up the width. -->
+          <td class="max-w-0 px-3 text-xs" :class="isCompact ? 'py-1.5' : 'py-2.5'">
             <div v-if="isPair(request)" class="flex flex-col gap-1">
               <div v-for="half in orderedHalves(request)" :key="half.id" class="flex h-6 min-w-0 items-center gap-2">
                 <template v-if="outcomeFor(half).kind === 'progress'">

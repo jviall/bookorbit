@@ -174,6 +174,42 @@ describe('RequestListTable pairs', () => {
     expect(wrapper.emitted('pair-approve')?.[0]?.[0]).toEqual([expect.objectContaining({ id: 10 }), expect.objectContaining({ id: 11 })])
   })
 
+  it('bounds the outcome cell so a long hand-back reason cannot squeeze the title out', () => {
+    const reason = 'No release matched the profile for this medium, so this one needs a release picked by hand'
+    const wrapper = mount(RequestListTable, {
+      props: {
+        requests: [
+          {
+            ...request({ id: 20, mediaKind: 'ebook', status: 'approved', statusReason: reason, companionRequestId: 21 }),
+            companion: request({ id: 21, mediaKind: 'audiobook', status: 'approved', statusReason: reason, companionRequestId: 20 }),
+          },
+        ],
+        canManage: true,
+        canSelfFulfil: false,
+        currentUserId: 1,
+        busyIds: new Set<number>(),
+        progressByRequest: {},
+        density: 'comfortable',
+        sortBy: 'createdAt',
+        sortDir: 'desc',
+        selectedIds: [],
+      },
+      global: {
+        stubs: { RouterLink: RouterLinkStub, RequestCover: true, RequestPairCover: true, RequestPairRowActions: true, RequestStatusBadge: true },
+      },
+    })
+
+    const lanes = wrapper
+      .get('table')
+      .findAll('span')
+      .filter((span) => span.text() === reason)
+    expect(lanes).toHaveLength(2)
+    for (const lane of lanes) {
+      expect(lane.classes()).toContain('truncate')
+      expect(lane.element.closest('td')?.classList.contains('max-w-0')).toBe(true)
+    }
+  })
+
   it('ticks the row only when every half a bulk action can reach is selected', () => {
     // Only the pending ebook can be acted on in bulk; the downloading audiobook cannot.
     expect((renderPair([10]).get('table tbody input[type="checkbox"]').element as HTMLInputElement).checked).toBe(true)
